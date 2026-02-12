@@ -115,23 +115,37 @@ export default function PharmacyDashboard() {
 
 function PrescriptionCard({ prescription, patient, doctor }: { prescription: any, patient: any, doctor: any }) {
   const updatePrescription = useUpdatePrescription();
-  const createTimeline = useCreateTimelineEvent();
   const { toast } = useToast();
+  const [medicines, setMedicines] = useState(prescription.medicines || []);
 
-  const handleDispense = () => {
+  const toggleStatus = (idx: number, field: 'dispensed' | 'unavailable') => {
+    const newMeds = [...medicines];
+    const med = newMeds[idx];
+    
+    if (field === 'dispensed') {
+      med.dispensed = !med.dispensed;
+      if (med.dispensed) med.unavailable = false;
+    } else {
+      med.unavailable = !med.unavailable;
+      if (med.unavailable) med.dispensed = false;
+    }
+    
+    setMedicines(newMeds);
+  };
+
+  const handleUpdate = () => {
+    const allProcessed = medicines.every((m: any) => m.dispensed || m.unavailable);
+    const newStatus = allProcessed ? "dispensed" : "pending";
+
     updatePrescription.mutate({
       id: prescription.id,
-      status: "dispensed",
-      // Mark all medicines as dispensed for simplicity in this demo
-      medicines: prescription.medicines.map((m: any) => ({ ...m, dispensed: true }))
+      status: newStatus,
+      medicines: medicines
     }, {
       onSuccess: () => {
-        toast({ title: "Dispensed", description: "Prescription marked as dispensed." });
-        createTimeline.mutate({
-          patientId: prescription.patientId,
-          type: "pharmacy",
-          title: "Medicines Dispensed",
-          description: "Prescription has been fulfilled by pharmacy."
+        toast({ 
+          title: "Inventory Updated", 
+          description: allProcessed ? "Prescription fully processed." : "Medicine statuses updated." 
         });
       }
     });
@@ -148,38 +162,48 @@ function PrescriptionCard({ prescription, patient, doctor }: { prescription: any
             </CardTitle>
             <CardDescription>Prescribed by Dr. {doctor?.name}</CardDescription>
           </div>
-          <Button onClick={handleDispense} disabled={updatePrescription.isPending} size="sm" className="bg-emerald-600 hover:bg-emerald-700">
-            {updatePrescription.isPending ? "Processing..." : "Mark Dispensed"}
+          <Button onClick={handleUpdate} disabled={updatePrescription.isPending} size="sm" className="bg-amber-600 hover:bg-amber-700">
+            {updatePrescription.isPending ? "Processing..." : "Submit Updates"}
           </Button>
         </div>
       </CardHeader>
       <CardContent className="pt-4">
-        <Accordion type="single" collapsible className="w-full">
-          <AccordionItem value="items" className="border-b-0">
-            <AccordionTrigger className="hover:no-underline py-0">
-              <span className="text-sm font-medium text-slate-700">View {prescription.medicines.length} Medicines</span>
-            </AccordionTrigger>
-            <AccordionContent className="pt-4">
-              <div className="space-y-2">
-                {prescription.medicines.map((med: any, idx: number) => (
-                  <div key={idx} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-100">
-                    <div className="flex items-center gap-3">
-                      <div className="bg-white p-2 rounded-full border border-slate-200">
-                        <Pill className="w-4 h-4 text-slate-400" />
-                      </div>
-                      <div>
-                        <p className="font-semibold text-slate-900">{med.name}</p>
-                        <p className="text-xs text-slate-500">{med.dosage} • {med.timing}</p>
-                      </div>
-                    </div>
-                    {/* In a real app, we'd toggle individual items here */}
-                    <Badge variant="secondary" className="bg-slate-200">Pending</Badge>
-                  </div>
-                ))}
+        <div className="space-y-3">
+          {medicines.map((med: any, idx: number) => (
+            <div key={idx} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-100">
+              <div className="flex items-center gap-3">
+                <div className="bg-white p-2 rounded-full border border-slate-200">
+                  <Pill className="w-4 h-4 text-slate-400" />
+                </div>
+                <div>
+                  <p className={cn("font-semibold", med.unavailable ? "text-slate-400 line-through" : "text-slate-900")}>
+                    {med.name}
+                  </p>
+                  <p className="text-xs text-slate-500">{med.dosage} • {med.timing}</p>
+                </div>
               </div>
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <Checkbox 
+                    id={`dispensed-${prescription.id}-${idx}`}
+                    checked={med.dispensed}
+                    onCheckedChange={() => toggleStatus(idx, 'dispensed')}
+                  />
+                  <Label htmlFor={`dispensed-${prescription.id}-${idx}`} className="text-xs cursor-pointer">Dispensed</Label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Checkbox 
+                    id={`unavailable-${prescription.id}-${idx}`}
+                    checked={med.unavailable}
+                    onCheckedChange={() => toggleStatus(idx, 'unavailable')}
+                    className="data-[state=checked]:bg-destructive data-[state=checked]:border-destructive"
+                  />
+                  <Label htmlFor={`unavailable-${prescription.id}-${idx}`} className="text-xs cursor-pointer text-destructive">Unavailable</Label>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </CardContent>
     </Card>
   );

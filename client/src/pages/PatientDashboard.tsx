@@ -129,6 +129,12 @@ export default function PatientDashboard() {
                           )}
                         </div>
                         <LabTracker status={test.status || "requested"} />
+                        {test.status === "completed" && test.result && (
+                          <div className="mt-4 p-4 bg-emerald-50 rounded-lg border border-emerald-100">
+                            <p className="text-sm font-semibold text-emerald-800">Result Summary:</p>
+                            <p className="text-sm text-emerald-700 mt-1">{test.result}</p>
+                          </div>
+                        )}
                       </CardContent>
                     </Card>
                   ))
@@ -166,8 +172,20 @@ export default function PatientDashboard() {
                         <div className="space-y-3">
                           {script.medicines.map((med: any, i: number) => (
                             <div key={i} className="flex justify-between items-center text-sm p-2 rounded hover:bg-slate-50">
-                              <div className="font-medium text-slate-700">{med.name}</div>
-                              <div className="text-slate-500">{med.dosage} • {med.timing}</div>
+                              <div className="flex flex-col">
+                                <div className={cn("font-medium", med.unavailable ? "text-slate-400 line-through" : "text-slate-700")}>
+                                  {med.name}
+                                </div>
+                                {med.unavailable && (
+                                  <span className="text-[10px] text-destructive font-medium uppercase tracking-wider">Unavailable</span>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <div className="text-slate-500">{med.dosage} • {med.timing}</div>
+                                {med.dispensed && (
+                                  <Badge variant="outline" className="text-[10px] h-4 text-emerald-600 border-emerald-200 bg-emerald-50">Collected</Badge>
+                                )}
+                              </div>
                             </div>
                           ))}
                         </div>

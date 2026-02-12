@@ -255,8 +255,9 @@ function PatientRow({ appointment, patient, doctorId }: { appointment: any, pati
                     <TabsTrigger value="notes">Notes</TabsTrigger>
                   </TabsList>
                   
-                  <TabsContent value="prescribe" className="mt-4">
+                  <TabsContent value="prescribe" className="mt-4 space-y-4">
                     <PrescriptionForm patientId={patient.id} doctorId={doctorId} onSuccess={() => toast({ title: "Prescription Sent", description: "Pharmacy has been notified." })} />
+                    <PrescriptionStatus patientId={patient.id} />
                   </TabsContent>
                   
                   <TabsContent value="lab" className="mt-4">
@@ -362,6 +363,60 @@ function PrescriptionForm({ patientId, doctorId, onSuccess }: { patientId: numbe
   );
 }
 
+function PrescriptionStatus({ patientId }: { patientId: number }) {
+  const { data: prescriptions } = usePrescriptions(patientId);
+  if (!prescriptions?.length) return null;
+
+  return (
+    <div className="space-y-3 mt-6">
+      <h4 className="text-sm font-bold text-slate-700">Active Prescriptions Status</h4>
+      {prescriptions.map(script => (
+        <Card key={script.id} className="border-slate-200">
+          <CardContent className="p-3">
+            <div className="space-y-2">
+              {script.medicines.map((med: any, idx: number) => (
+                <div key={idx} className="flex justify-between items-center text-sm">
+                  <span className={cn(med.unavailable && "text-destructive font-medium")}>{med.name}</span>
+                  {med.unavailable ? (
+                    <Badge variant="destructive" className="text-[10px] h-4">Unavailable</Badge>
+                  ) : med.dispensed ? (
+                    <Badge variant="outline" className="text-[10px] h-4 text-emerald-600 border-emerald-200 bg-emerald-50">Dispensed</Badge>
+                  ) : (
+                    <Badge variant="secondary" className="text-[10px] h-4">Pending</Badge>
+                  )}
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+function LabResultsView({ patientId }: { patientId: number }) {
+  const { data: tests } = useLabTests();
+  const myTests = tests?.filter(t => t.patientId === patientId && t.status === 'completed');
+  if (!myTests?.length) return null;
+
+  return (
+    <div className="space-y-3 mt-6">
+      <h4 className="text-sm font-bold text-slate-700">Latest Lab Results</h4>
+      {myTests.map(test => (
+        <Card key={test.id} className="border-slate-200 bg-purple-50/30">
+          <CardContent className="p-3">
+            <div className="flex justify-between items-start mb-1">
+              <span className="font-bold text-sm text-purple-900">{test.testName}</span>
+              <span className="text-[10px] text-slate-400">{test.createdAt ? format(new Date(test.createdAt), "MMM d") : ""}</span>
+            </div>
+            <p className="text-sm text-slate-700 font-medium">Result: {test.result}</p>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
 function LabTestForm({ patientId, doctorId, onSuccess }: { patientId: number, doctorId: number, onSuccess: () => void }) {
   const [testName, setTestName] = useState("");
   const createLabTest = useCreateLabTest();
@@ -389,32 +444,35 @@ function LabTestForm({ patientId, doctorId, onSuccess }: { patientId: number, do
   };
 
   return (
-    <Card>
-      <CardContent className="p-6">
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label>Select Lab Test</Label>
-            <Select onValueChange={setTestName} value={testName}>
-              <SelectTrigger>
-                <SelectValue placeholder="Choose a test..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Complete Blood Count (CBC)">Complete Blood Count (CBC)</SelectItem>
-                <SelectItem value="Blood Sugar Fasting">Blood Sugar Fasting</SelectItem>
-                <SelectItem value="Liver Function Test">Liver Function Test</SelectItem>
-                <SelectItem value="Lipid Profile">Lipid Profile</SelectItem>
-                <SelectItem value="Thyroid Profile">Thyroid Profile</SelectItem>
-                <SelectItem value="X-Ray Chest">X-Ray Chest</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex justify-end pt-4">
-            <Button type="submit" disabled={!testName || createLabTest.isPending}>
-              {createLabTest.isPending ? "Requesting..." : "Request Test"}
-            </Button>
-          </div>
-        </form>
-      </CardContent>
-    </Card>
+    <div className="space-y-4">
+      <Card>
+        <CardContent className="p-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label>Select Lab Test</Label>
+              <Select onValueChange={setTestName} value={testName}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose a test..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Complete Blood Count (CBC)">Complete Blood Count (CBC)</SelectItem>
+                  <SelectItem value="Blood Sugar Fasting">Blood Sugar Fasting</SelectItem>
+                  <SelectItem value="Liver Function Test">Liver Function Test</SelectItem>
+                  <SelectItem value="Lipid Profile">Lipid Profile</SelectItem>
+                  <SelectItem value="Thyroid Profile">Thyroid Profile</SelectItem>
+                  <SelectItem value="X-Ray Chest">X-Ray Chest</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex justify-end pt-4">
+              <Button type="submit" disabled={!testName || createLabTest.isPending}>
+                {createLabTest.isPending ? "Requesting..." : "Request Test"}
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+      <LabResultsView patientId={patientId} />
+    </div>
   );
 }

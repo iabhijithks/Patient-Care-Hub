@@ -40,7 +40,13 @@ export const prescriptions = pgTable("prescriptions", {
   id: serial("id").primaryKey(),
   patientId: integer("patient_id").notNull(),
   doctorId: integer("doctor_id").notNull(),
-  medicines: jsonb("medicines").$type<Array<{ name: string; dosage: string; timing: string; dispensed: boolean }>>().notNull(),
+  medicines: jsonb("medicines").$type<Array<{ 
+    name: string; 
+    dosage: string; 
+    timing: string; 
+    dispensed: boolean;
+    unavailable?: boolean;
+  }>>().notNull(),
   status: text("status").default("pending"), // pending, dispensed
   createdAt: timestamp("created_at").defaultNow(),
 });
