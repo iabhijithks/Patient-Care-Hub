@@ -1,0 +1,118 @@
+Build a modern hospital patient-care coordination web app with role-based dashboards.
+
+First screen:
+Role selection cards for:
+Patient, Doctor, Nurse, Lab, Pharmacy.
+
+Use a clean, attractive medical dashboard UI with soft gradients, colored status badges, progress bars, and card layouts.
+Primary colors: blue, teal, white, and light green accents.
+
+The system revolves around a single patient record shared across roles.
+
+--------------------------------
+
+DOCTOR DASHBOARD
+- Patient queue table
+- Each patient shows:
+  name, age, problem, status, estimated consultation time
+- Open patient record panel
+
+Doctor profile card should show:
+- Doctor name
+- Qualification (MBBS, MD, PhD)
+- Specialization
+- Experience in years
+- Department
+
+Doctor actions:
+- Call patient button
+- Add prescription (medicine name, dosage, timing)
+- Confirm prescription button
+- Request diagnostic tests
+- Refer doctor using doctor ID
+- View pharmacy updates
+- View lab results
+
+--------------------------------
+
+PATIENT DASHBOARD
+Top section:
+- Patient details card (name, age, previous conditions, current problem, old medicines)
+
+Doctor info card:
+- Doctor name
+- Qualification (MBBS / MD / PhD)
+- Specialization
+- Estimated consultation time
+Example:
+"Your consultation is expected around 11:00 AM"
+
+Prescription section:
+- Medicine list
+- When to take
+- Status badges
+
+Pharmacy status section.
+
+Lab section with Flipkart-style progress bar showing:
+- Test Requested
+- Sample Collected
+- Testing in Progress
+- Results Ready
+
+Results section with simple explanation text.
+
+Referral doctor info card.
+
+--------------------------------
+
+PHARMACY DASHBOARD
+- Patient ID and name
+- Medicine checklist table
+- Quantity and timing columns
+- Checkbox per medicine
+- Submit button
+
+If medicine unavailable:
+show "Unavailable" badge.
+
+--------------------------------
+
+LAB DASHBOARD
+- Test request table
+- Patient ID and name
+- Mark sample collected
+- Mark test completed
+- Upload result button
+- Status progress indicator
+
+--------------------------------
+
+NURSE DASHBOARD
+- View patient record
+- Enter prescription draft
+- Update vitals form
+- Add care instructions
+
+--------------------------------
+
+PATIENT TIMELINE PANEL
+Show activity feed like:
+Doctor added prescription
+Pharmacy dispensed medicine
+Lab uploaded result
+Doctor reviewed result
+Referral created
+
+--------------------------------
+
+Use modern dashboard styling with:
+- cards
+- rounded corners
+- shadows
+- colored status labels
+- progress bars
+- clean tables
+
+Use mock data only.
+No authentication needed.
